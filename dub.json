@@ -1,0 +1,11 @@
+{
+    "name": "botan-math",
+    "description": "A D Math Library used for Botan",
+    "license": "BSD 2-clause",
+    "authors": ["Jack Lloyd", "Etienne Cimon", "See CREDITS.md for more."],
+    "targetName": "botan_math",
+    "targetType": "staticLibrary",
+    "targetPath": "build",
+    "sourcePaths": ["source/botan_math/"],
+	"buildOptions": ["releaseMode"]
+}
