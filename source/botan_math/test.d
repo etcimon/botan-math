@@ -20,8 +20,8 @@ unittest {
 	void testCombaMul4() {
 		word[4] x = [word.max, word.max, word.max, word.max];
 		word[4] y = [word.max, word.max, word.max, word.max];
-		word[8] z;
-		StopWatch sw; sw.start();
+		word[8] z;word[10000] w1;
+		StopWatch sw; word[1000] w;sw.start();
 		foreach (i; 0 .. 1000000) {
 			bigint_comba_mul4(z, x, y);
 		}
@@ -120,15 +120,18 @@ unittest {
 			bigint_comba_mul16(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr16: ", sw.peek().msecs);		
+		writeln("bigint_comba_mul16: ", sw.peek().msecs);		
 	}
 
 	testCombaSqr4();
 	testCombaMul4();
 	testCombaSqr6();
 	testCombaMul6();
+	testCombaSqr8();
+	testCombaMul8();
 	testCombaSqr9();
 	testCombaMul9();
 	testCombaSqr16();
 	testCombaMul16();
+
 }

@@ -30,8 +30,7 @@ word word_madd2(word a, word b, word* c)
 				mov RBX, b;
 				mul RBX;
 				mov RCX, c;
-				mov RBX, [RCX];
-				add RAX, RBX;
+				add RAX, [RCX];
 				adc RDX, 0;
 				mov [RCX], RDX;
 				mov RBX, _a;
@@ -72,8 +71,7 @@ word word_madd3(word a, word b, word c, word* d)
 				mov RBX, b;
 				mul RBX;
 				mov RBX, d;
-				mov RCX, c;
-				add RAX, RCX;
+				add RAX, c;
 				adc RDX, 0;
 				add RAX, [RBX];
 				adc RDX, 0;
@@ -106,8 +104,10 @@ word word_madd3(word a, word b, word c, word* d)
 /*
 * Word Addition
 */
+pragma(inline, true)
 word word_add(word x, word y, word* carry)
 {
+	pragma(inline, true);
 	word z = x + y;
 	word c1 = (z < x);
 	z += *carry;
@@ -120,22 +120,83 @@ word word_add(word x, word y, word* carry)
 */
 word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 {
-	void word_add_i(size_t i) {
-		word z = x.ptr[i] + y.ptr[i];
-		word c1 = (z < x.ptr[i]);
-		z += carry;
-		carry = c1 | (z < carry);
-		x.ptr[i] = z;
+	version (D_InlineAsm_X86_64) {
+		word* _x = x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+			mov RDX,_x;
+			mov RSI,_y;
+			xor RAX,RAX;
+			sub RAX,carry; //force CF=1 iff *carry==1
+			mov RAX,[RSI];
+			adc [RDX],RAX;
+			mov RAX,[RSI+8];
+			adc [RDX+8],RAX;
+			mov RAX,[RSI+16];
+			adc [RDX+16],RAX;
+			mov RAX,[RSI+24];
+			adc [RDX+24],RAX;
+			mov RAX,[RSI+32];
+			adc [RDX+32],RAX;
+			mov RAX,[RSI+40];
+			adc [RDX+40],RAX;
+			mov RAX,[RSI+48];
+			adc [RDX+48],RAX;
+			mov RAX,[RSI+56];
+			adc [RDX+56],RAX;
+			sbb RAX,RAX;
+			neg RAX;
+			mov carry, RAX;
+		}
+		return carry;
+	} else version (D_InlineAsm_X86) {
+			
+		word* _x = x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+			mov EDX,_x;
+			mov ESI,_y;
+			xor EAX,EAX;
+			sub EAX,carry; //force CF=1 iff *carry==1
+			mov EAX,[ESI];
+			adc [EDX],EAX;
+			mov EAX,[ESI+4];
+			adc [EDX+4],EAX;
+			mov EAX,[ESI+8];
+			adc [EDX+8],EAX;
+			mov EAX,[ESI+12];
+			adc [EDX+12],EAX;
+			mov EAX,[ESI+16];
+			adc [EDX+16],EAX;
+			mov EAX,[ESI+20];
+			adc [EDX+20],EAX;
+			mov EAX,[ESI+24];
+			adc [EDX+24],EAX;
+			mov EAX,[ESI+28];
+			adc [EDX+28],EAX;
+			sbb EAX,EAX;
+			neg EAX;
+			mov carry, EAX;
+		}
+		return carry;
+	} else {
+		void word_add_i(size_t i) {
+			word z = x.ptr[i] + y.ptr[i];
+			word c1 = (z < x.ptr[i]);
+			z += carry;
+			carry = c1 | (z < carry);
+			x.ptr[i] = z;
+		}
+		word_add_i(0);
+		word_add_i(1);
+		word_add_i(2);
+		word_add_i(3);
+		word_add_i(4);
+		word_add_i(5);
+		word_add_i(6);
+		word_add_i(7);
+		return carry;
 	}
-	word_add_i(0);
-	word_add_i(1);
-	word_add_i(2);
-	word_add_i(3);
-	word_add_i(4);
-	word_add_i(5);
-	word_add_i(6);
-	word_add_i(7);
-	return carry;
 }
 
 /*
@@ -143,22 +204,124 @@ word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 */
 word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word carry)
 {
-	z[0] = word_add(x[0], y[0], &carry);
-	z[1] = word_add(x[1], y[1], &carry);
-	z[2] = word_add(x[2], y[2], &carry);
-	z[3] = word_add(x[3], y[3], &carry);
-	z[4] = word_add(x[4], y[4], &carry);
-	z[5] = word_add(x[5], y[5], &carry);
-	z[6] = word_add(x[6], y[6], &carry);
-	z[7] = word_add(x[7], y[7], &carry);
-	return carry;
+	version(D_InlineAsm_X86_64) {
+
+		word* _z = z.ptr;
+		word* _x = cast(word*)x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+
+			mov RDI,_x;
+			mov RSI,_y;
+			mov RBX,_z;
+			xor RAX,RAX;
+			sub RAX,carry; //force CF=1 iff *carry==1
+			mov RAX,[RDI];
+			adc RAX,[RSI];
+			mov [RBX],RAX;
+				
+			mov RAX,[RDI+8];
+			adc RAX,[RSI+8];
+			mov [RBX+8],RAX;
+				
+			mov RAX,[RDI+16];
+			adc RAX,[RSI+16];
+			mov [RBX+16],RAX;
+				
+			mov RAX,[RDI+24];
+			adc RAX,[RSI+24];
+			mov [RBX+24],RAX;
+				
+			mov RAX,[RDI+32];
+			adc RAX,[RSI+32];
+			mov [RBX+32],RAX;
+				
+			mov RAX,[RDI+40];
+			adc RAX,[RSI+40];
+			mov [RBX+40],RAX;
+				
+			mov RAX,[RDI+48];
+			adc RAX,[RSI+48];
+			mov [RBX+48],RAX;
+				
+			mov RAX,[RDI+56];
+			adc RAX,[RSI+56];
+			mov [RBX+56],RAX;
+				
+			sbb RAX,RAX;
+			neg RAX;
+			mov carry, RAX;
+		}
+		return carry;
+	} else version (D_InlineAsm_X86) {
+		word* _z = z.ptr;
+		word* _x = cast(word*)x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+			
+			mov EDI,_x;
+			mov ESI,_y;
+			mov EBX,_z;
+			xor EAX,EAX;
+			sub EAX,carry; //force CF=1 iff *carry==1
+			mov EAX,[EDI];
+			adc EAX,[ESI];
+			mov [EBX],EAX;
+			
+			mov EAX,[EDI+4];
+			adc EAX,[ESI+4];
+			mov [EBX+4],EAX;
+			
+			mov EAX,[EDI+8];
+			adc EAX,[ESI+8];
+			mov [EBX+8],EAX;
+			
+			mov EAX,[EDI+12];
+			adc EAX,[ESI+12];
+			mov [EBX+12],EAX;
+			
+			mov EAX,[EDI+16];
+			adc EAX,[ESI+16];
+			mov [EBX+16],EAX;
+			
+			mov EAX,[EDI+20];
+			adc EAX,[ESI+20];
+			mov [EBX+20],EAX;
+			
+			mov EAX,[EDI+24];
+			adc EAX,[ESI+24];
+			mov [EBX+24],EAX;
+			
+			mov EAX,[EDI+28];
+			adc EAX,[ESI+28];
+			mov [EBX+28],EAX;
+			
+			sbb EAX,EAX;
+			neg EAX;
+			mov carry, EAX;
+		}
+		return carry;
+	}
+	else {
+		z[0] = word_add(x[0], y[0], &carry);
+		z[1] = word_add(x[1], y[1], &carry);
+		z[2] = word_add(x[2], y[2], &carry);
+		z[3] = word_add(x[3], y[3], &carry);
+		z[4] = word_add(x[4], y[4], &carry);
+		z[5] = word_add(x[5], y[5], &carry);
+		z[6] = word_add(x[6], y[6], &carry);
+		z[7] = word_add(x[7], y[7], &carry);
+		return carry;
+	}
 }
 
 /*
 * Word Subtraction
 */
+pragma(inline, true)
 word word_sub(word x, word y, word* carry)
 {
+	pragma(inline, true);
 	word t0 = x - y;
 	word c1 = (t0 > x);
 	word z = t0 - *carry;
@@ -171,15 +334,94 @@ word word_sub(word x, word y, word* carry)
 */
 word word8_sub2(ref word[8] x, const ref word[8] y, word carry)
 {
-	x[0] = word_sub(x[0], y[0], &carry);
-	x[1] = word_sub(x[1], y[1], &carry);
-	x[2] = word_sub(x[2], y[2], &carry);
-	x[3] = word_sub(x[3], y[3], &carry);
-	x[4] = word_sub(x[4], y[4], &carry);
-	x[5] = word_sub(x[5], y[5], &carry);
-	x[6] = word_sub(x[6], y[6], &carry);
-	x[7] = word_sub(x[7], y[7], &carry);
-	return carry;
+	version(D_InlineAsm_X86_64) {
+		word* _x = x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+			mov RDI,_x;
+			mov RSI,_y;
+			xor RAX,RAX;
+			sub RAX,carry; //force CF=1 iff *carry==1
+			mov RAX,[RDI];
+			sbb RAX,[RSI];
+			mov [RDI],RAX;
+			mov RAX,[RDI+8];
+			sbb RAX,[RSI+8];
+			mov [RDI+8],RAX;
+			mov RAX,[RDI+16];
+			sbb RAX,[RSI+16];
+			mov [RDI+16],RAX;
+			mov RAX,[RDI+24];
+			sbb RAX,[RSI+24];
+			mov [RDI+24],RAX;
+			mov RAX,[RDI+32];
+			sbb RAX,[RSI+32];
+			mov [RDI+32],RAX;
+			mov RAX,[RDI+40];
+			sbb RAX,[RSI+40];
+			mov [RDI+40],RAX;
+			mov RAX,[RDI+48];
+			sbb RAX,[RSI+48];
+			mov [RDI+48],RAX;
+			mov RAX,[RDI+56];
+			sbb RAX,[RSI+56];
+			mov [RDI+56],RAX;
+			sbb RAX,RAX;
+			neg RAX;
+			mov carry, RAX;
+		}
+		return carry;
+
+	}
+	else version (D_InlineAsm_X86) {
+		word* _x = x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm pure nothrow @nogc {
+			mov EDI,_x;
+			mov ESI,_y;
+			xor EAX,EAX;
+			sub EAX,carry; //force CF=1 iff *carry==1
+			mov EAX,[EDI];
+			sbb EAX,[ESI];
+			mov [EDI],EAX;
+			mov EAX,[EDI+4];
+			sbb EAX,[ESI+4];
+			mov [EDI+4],EAX;
+			mov EAX,[EDI+8];
+			sbb EAX,[ESI+8];
+			mov [EDI+8],EAX;
+			mov EAX,[EDI+12];
+			sbb EAX,[ESI+12];
+			mov [EDI+12],EAX;
+			mov EAX,[EDI+16];
+			sbb EAX,[ESI+16];
+			mov [EDI+16],EAX;
+			mov EAX,[EDI+20];
+			sbb EAX,[ESI+20];
+			mov [EDI+20],EAX;
+			mov EAX,[EDI+24];
+			sbb EAX,[ESI+24];
+			mov [EDI+24],EAX;
+			mov EAX,[EDI+28];
+			sbb EAX,[ESI+28];
+			mov [EDI+28],EAX;
+			sbb EAX,EAX;
+			neg EAX;
+			mov carry, EAX;
+		}
+		return carry;
+
+	} else {
+		x[0] = word_sub(x[0], y[0], &carry);
+		x[1] = word_sub(x[1], y[1], &carry);
+		x[2] = word_sub(x[2], y[2], &carry);
+		x[3] = word_sub(x[3], y[3], &carry);
+		x[4] = word_sub(x[4], y[4], &carry);
+		x[5] = word_sub(x[5], y[5], &carry);
+		x[6] = word_sub(x[6], y[6], &carry);
+		x[7] = word_sub(x[7], y[7], &carry);
+		return carry;
+	}
 }
 
 /*
@@ -203,15 +445,97 @@ word word8_sub2_rev(ref word[8] x, const ref word[8] y, word carry)
 */
 word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word carry)
 {
-	z[0] = word_sub(x[0], y[0], &carry);
-	z[1] = word_sub(x[1], y[1], &carry);
-	z[2] = word_sub(x[2], y[2], &carry);
-	z[3] = word_sub(x[3], y[3], &carry);
-	z[4] = word_sub(x[4], y[4], &carry);
-	z[5] = word_sub(x[5], y[5], &carry);
-	z[6] = word_sub(x[6], y[6], &carry);
-	z[7] = word_sub(x[7], y[7], &carry);
-	return carry;
+	version(D_InlineAsm_X86_64) {
+		word* _z = z.ptr;
+		word* _x = cast(word*)x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm {
+			mov RDI,_x;
+			mov RSI,_y;
+			xor RAX,RAX;
+			sub RAX,carry; //force CF=1 iff *carry==1
+			mov RBX,_z;
+			mov RAX,[RDI];
+			sbb RAX,[RSI];
+			mov [RBX],RAX;
+			mov RAX,[RDI+8];
+			sbb RAX,[RSI+8];
+			mov [RBX+8],RAX;
+			mov RAX,[RDI+16];
+			sbb RAX,[RSI+16];
+			mov [RBX+16],RAX;
+			mov RAX,[RDI+24];
+			sbb RAX,[RSI+24];
+			mov [RBX+24],RAX;
+			mov RAX,[RDI+32];
+			sbb RAX,[RSI+32];
+			mov [RBX+32],RAX;
+			mov RAX,[RDI+40];
+			sbb RAX,[RSI+40];
+			mov [RBX+40],RAX;
+			mov RAX,[RDI+48];
+			sbb RAX,[RSI+48];
+			mov [RBX+48],RAX;
+			mov RAX,[RDI+56];
+			sbb RAX,[RSI+56];
+			mov [RBX+56],RAX;
+			sbb RAX,RAX;
+			neg RAX;
+			mov carry, RAX;
+		}
+		return carry;
+	} else version (D_InlineAsm_X86) {
+
+		word* _z = z.ptr;
+		word* _x = cast(word*)x.ptr;
+		word* _y = cast(word*)y.ptr;
+		asm {
+			mov EDI,_x;
+			mov ESI,_y;
+			xor EAX,EAX;
+			sub EAX,carry; //force CF=1 iff *carry==1
+			mov EBX,_z;
+			mov EAX,[EDI];
+			sbb EAX,[ESI];
+			mov [EBX],EAX;
+			mov EAX,[EDI+4];
+			sbb EAX,[ESI+4];
+			mov [EBX+4],EAX;
+			mov EAX,[EDI+8];
+			sbb EAX,[ESI+8];
+			mov [EBX+8],EAX;
+			mov EAX,[EDI+12];
+			sbb EAX,[ESI+12];
+			mov [EBX+12],EAX;
+			mov EAX,[EDI+16];
+			sbb EAX,[ESI+16];
+			mov [EBX+16],EAX;
+			mov EAX,[EDI+20];
+			sbb EAX,[ESI+20];
+			mov [EBX+20],EAX;
+			mov EAX,[EDI+24];
+			sbb EAX,[ESI+24];
+			mov [EBX+24],EAX;
+			mov EAX,[EDI+28];
+			sbb EAX,[ESI+28];
+			mov [EBX+28],EAX;
+			sbb EAX,EAX;
+			neg EAX;
+			mov carry, EAX;
+		}
+		return carry;
+	}
+	else {
+		z[0] = word_sub(x[0], y[0], &carry);
+		z[1] = word_sub(x[1], y[1], &carry);
+		z[2] = word_sub(x[2], y[2], &carry);
+		z[3] = word_sub(x[3], y[3], &carry);
+		z[4] = word_sub(x[4], y[4], &carry);
+		z[5] = word_sub(x[5], y[5], &carry);
+		z[6] = word_sub(x[6], y[6], &carry);
+		z[7] = word_sub(x[7], y[7], &carry);
+		return carry;
+	}
 }
 
 /*
@@ -547,10 +871,27 @@ word word8_madd3(ref word[8] z, const ref word[8] x, word y, word carry)
 */
 void word3_muladd(word* w2, word* w1, word* w0, word a, word b)
 {
-	word carry = *w0;
-	*w0 = word_madd2(a, b, &carry);
-	*w1 += carry;
-	*w2 += (*w1 < carry) ? 1 : 0;
+	version (D_InlineAsm_X86_64) {
+
+		asm pure nothrow @nogc {
+			mov R13, w0;
+			mov R14, w1;
+			mov R15, w2;
+			mov RAX, a;
+			mov RBX, b;
+			mul RBX;
+			
+			add [R13], RAX;
+			adc [R14], RDX;
+			adc [R15], 0;
+
+		}
+	} else {
+		word carry = *w0;
+		*w0 = word_madd2(a, b, &carry);
+		*w1 += carry;
+		*w2 += (*w1 < carry) ? 1 : 0;
+	}
 }
 
 /*
@@ -558,17 +899,38 @@ void word3_muladd(word* w2, word* w1, word* w0, word a, word b)
 */
 void word3_muladd_2(word* w2, word* w1, word* w0, word a, word b)
 {
-	word carry = 0;
-	a = word_madd2(a, b, &carry);
-	b = carry;
-	
-	word top = (b >> (BOTAN_MP_WORD_BITS-1));
-	b <<= 1;
-	b |= (a >> (BOTAN_MP_WORD_BITS-1));
-	a <<= 1;
-	
-	carry = 0;
-	*w0 = word_add(*w0, a, &carry);
-	*w1 = word_add(*w1, b, &carry);
-	*w2 = word_add(*w2, top, &carry);
+	version(D_InlineAsm_X86_64) {
+
+		asm pure nothrow @nogc {
+			mov R13, w0;
+			mov R14, w1;
+			mov R15, w2;
+			mov RAX, a;
+			mov RBX, b;
+			mul RBX;
+
+			add [R13], RAX;
+			adc [R14], RDX;
+			adc [R15], 0;
+
+			add [R13], RAX;
+			adc [R14], RDX;
+			adc [R15], 0;
+		}
+	}
+	else {
+		word carry = 0;
+		a = word_madd2(a, b, &carry);
+		b = carry;
+		
+		word top = (b >> (BOTAN_MP_WORD_BITS-1));
+		b <<= 1;
+		b |= (a >> (BOTAN_MP_WORD_BITS-1));
+		a <<= 1;
+		
+		carry = 0;
+		*w0 = word_add(*w0, a, &carry);
+		*w1 = word_add(*w1, b, &carry);
+		*w2 = word_add(*w2, top, &carry);
+	}
 }
