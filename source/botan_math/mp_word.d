@@ -104,10 +104,8 @@ word word_madd3(word a, word b, word c, word* d)
 /*
 * Word Addition
 */
-pragma(inline, true)
 word word_add(word x, word y, word* carry)
 {
-	pragma(inline, true);
 	word z = x + y;
 	word c1 = (z < x);
 	z += *carry;
@@ -318,10 +316,8 @@ word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 /*
 * Word Subtraction
 */
-pragma(inline, true)
 word word_sub(word x, word y, word* carry)
 {
-	pragma(inline, true);
 	word t0 = x - y;
 	word c1 = (t0 > x);
 	word z = t0 - *carry;

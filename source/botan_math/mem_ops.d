@@ -8,10 +8,8 @@ import std.c.string : memset, memmove;
 *  ptr = a pointer to an array
 *  n = the number of Ts pointed to by ptr
 */
-pragma(inline, true)
 void clearMem(T)(T* ptr, size_t n)
 {
-	pragma(inline, true);
 	memset(ptr, 0, T.sizeof*n);
 }
 
