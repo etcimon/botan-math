@@ -28,9 +28,9 @@ string mp_bigint_comba_mul(alias ROWS)() {
 
 	//init
 	asm_x86_64 ~= "
-			mov R8, _x;
+			mov RSI, _x;
 			mov R9, _y;
-			mov R10, _z;
+			mov RDI, _z;
 			xor R15, R15;
 			xor R14, R14;
 			xor R13, R13;\n";
@@ -42,16 +42,16 @@ string mp_bigint_comba_mul(alias ROWS)() {
 
 			asm_x86_64 ~= "\nMUL_" ~ cnt.to!string ~ ": // " ~ i.to!string ~ " // " ~ j.to!string ~ " // " ~ reverse.to!string ~ "\n";
 			if (j == 0) {
-				if (i > 1) asm_x86_64 ~= "sub R8, " ~ ((i-1)*8).to!string ~ ";\n";
+				if (i > 1) asm_x86_64 ~= "sub RSI, " ~ ((i-1)*8).to!string ~ ";\n";
 				if (i > 0) asm_x86_64 ~= "add R9, " ~ (i*8).to!string ~ ";\n";
 			}
 			else {
-				asm_x86_64 ~= "add R8, 8;\n";
+				asm_x86_64 ~= "add RSI, 8;\n";
 				asm_x86_64 ~= "sub R9, 8;\n";
 			}
 			// R15: w2, R13: w0, R14: w1
 			// multiply
-			asm_x86_64 ~= "mov RAX, [R8]; mov RBX, [R9]; mul RBX;\n";
+			asm_x86_64 ~= "mov RAX, [RSI]; mov RBX, [R9]; mul RBX;\n";
 			// add carry
 			{ 
 				asm_x86_64 ~= "add RAX, ";
@@ -71,8 +71,8 @@ string mp_bigint_comba_mul(alias ROWS)() {
 				asm_x86_64 ~= W[0];
 				asm_x86_64 ~= ", RAX;\n";
 			} else { // if this is the last j
-				if (i > 0) asm_x86_64 ~= "add R10, 8;\n";
-				asm_x86_64 ~= "mov [R10], RAX;\n";
+				if (i > 0) asm_x86_64 ~= "add RDI, 8;\n";
+				asm_x86_64 ~= "mov [RDI], RAX;\n";
 				asm_x86_64 ~= "xor ";
 				asm_x86_64 ~= W[0];
 				asm_x86_64 ~= ", ";
@@ -107,7 +107,7 @@ string mp_bigint_comba_mul(alias ROWS)() {
 	}
 
 	// save the last carry
-	asm_x86_64 ~= "add R10, 8;\n";
-	asm_x86_64 ~= "mov [R10], " ~ W[1] ~ ";\n";
+	asm_x86_64 ~= "add RDI, 8;\n";
+	asm_x86_64 ~= "mov [RDI], " ~ W[1] ~ ";\n";
 	return start ~ asm_x86_64 ~ end;
 }

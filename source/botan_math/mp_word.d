@@ -10,7 +10,7 @@
 * Botan is released under the Simplified BSD License (see LICENSE.md)
 */
 module botan_math.mp_word;
-
+import botan_math.mul128;
 public import botan_math.mp_types;
 /*
 * Word Multiply/Add
@@ -121,27 +121,29 @@ word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 	version (D_InlineAsm_X86_64) {
 		word* _x = x.ptr;
 		word* _y = cast(word*)y.ptr;
+
 		asm pure nothrow @nogc {
-			mov RDX,_x;
+			mov RDI,_x;
 			mov RSI,_y;
 			xor RAX,RAX;
 			sub RAX,carry; //force CF=1 iff *carry==1
 			mov RAX,[RSI];
-			adc [RDX],RAX;
+			adc [RDI],RAX;
+			
 			mov RAX,[RSI+8];
-			adc [RDX+8],RAX;
+			adc [RDI+8],RAX;
 			mov RAX,[RSI+16];
-			adc [RDX+16],RAX;
+			adc [RDI+16],RAX;
 			mov RAX,[RSI+24];
-			adc [RDX+24],RAX;
+			adc [RDI+24],RAX;
 			mov RAX,[RSI+32];
-			adc [RDX+32],RAX;
+			adc [RDI+32],RAX;
 			mov RAX,[RSI+40];
-			adc [RDX+40],RAX;
+			adc [RDI+40],RAX;
 			mov RAX,[RSI+48];
-			adc [RDX+48],RAX;
+			adc [RDI+48],RAX;
 			mov RAX,[RSI+56];
-			adc [RDX+56],RAX;
+			adc [RDI+56],RAX;
 			sbb RAX,RAX;
 			neg RAX;
 			mov carry, RAX;
@@ -152,26 +154,26 @@ word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 		word* _x = x.ptr;
 		word* _y = cast(word*)y.ptr;
 		asm pure nothrow @nogc {
-			mov EDX,_x;
+			mov EDI,_x;
 			mov ESI,_y;
 			xor EAX,EAX;
 			sub EAX,carry; //force CF=1 iff *carry==1
 			mov EAX,[ESI];
-			adc [EDX],EAX;
+			adc [EDI],EAX;
 			mov EAX,[ESI+4];
-			adc [EDX+4],EAX;
+			adc [EDI+4],EAX;
 			mov EAX,[ESI+8];
-			adc [EDX+8],EAX;
+			adc [EDI+8],EAX;
 			mov EAX,[ESI+12];
-			adc [EDX+12],EAX;
+			adc [EDI+12],EAX;
 			mov EAX,[ESI+16];
-			adc [EDX+16],EAX;
+			adc [EDI+16],EAX;
 			mov EAX,[ESI+20];
-			adc [EDX+20],EAX;
+			adc [EDI+20],EAX;
 			mov EAX,[ESI+24];
-			adc [EDX+24],EAX;
+			adc [EDI+24],EAX;
 			mov EAX,[ESI+28];
-			adc [EDX+28],EAX;
+			adc [EDI+28],EAX;
 			sbb EAX,EAX;
 			neg EAX;
 			mov carry, EAX;
@@ -209,42 +211,42 @@ word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		word* _y = cast(word*)y.ptr;
 		asm pure nothrow @nogc {
 
-			mov RDI,_x;
+			mov RBX,_x;
 			mov RSI,_y;
-			mov RBX,_z;
+			mov RDI,_z;
 			xor RAX,RAX;
 			sub RAX,carry; //force CF=1 iff *carry==1
-			mov RAX,[RDI];
+			mov RAX,[RBX];
 			adc RAX,[RSI];
-			mov [RBX],RAX;
+			mov [RDI],RAX;
 				
-			mov RAX,[RDI+8];
+			mov RAX,[RBX+8];
 			adc RAX,[RSI+8];
-			mov [RBX+8],RAX;
+			mov [RDI+8],RAX;
 				
-			mov RAX,[RDI+16];
+			mov RAX,[RBX+16];
 			adc RAX,[RSI+16];
-			mov [RBX+16],RAX;
+			mov [RDI+16],RAX;
 				
-			mov RAX,[RDI+24];
+			mov RAX,[RBX+24];
 			adc RAX,[RSI+24];
-			mov [RBX+24],RAX;
+			mov [RDI+24],RAX;
 				
-			mov RAX,[RDI+32];
+			mov RAX,[RBX+32];
 			adc RAX,[RSI+32];
-			mov [RBX+32],RAX;
+			mov [RDI+32],RAX;
 				
-			mov RAX,[RDI+40];
+			mov RAX,[RBX+40];
 			adc RAX,[RSI+40];
-			mov [RBX+40],RAX;
+			mov [RDI+40],RAX;
 				
-			mov RAX,[RDI+48];
+			mov RAX,[RBX+48];
 			adc RAX,[RSI+48];
-			mov [RBX+48],RAX;
+			mov [RDI+48],RAX;
 				
-			mov RAX,[RDI+56];
+			mov RAX,[RBX+56];
 			adc RAX,[RSI+56];
-			mov [RBX+56],RAX;
+			mov [RDI+56],RAX;
 				
 			sbb RAX,RAX;
 			neg RAX;
@@ -332,40 +334,44 @@ word word8_sub2(ref word[8] x, const ref word[8] y, word carry)
 {
 	version(D_InlineAsm_X86_64) {
 		word* _x = x.ptr;
+		word[8] ret;
+		word* _z = ret.ptr;
 		word* _y = cast(word*)y.ptr;
 		asm pure nothrow @nogc {
-			mov RDI,_x;
+			mov RBX,_x;
 			mov RSI,_y;
+			mov RDI, _z;
 			xor RAX,RAX;
 			sub RAX,carry; //force CF=1 iff *carry==1
-			mov RAX,[RDI];
+			mov RAX,[RBX];
 			sbb RAX,[RSI];
 			mov [RDI],RAX;
-			mov RAX,[RDI+8];
+			mov RAX,[RBX+8];
 			sbb RAX,[RSI+8];
 			mov [RDI+8],RAX;
-			mov RAX,[RDI+16];
+			mov RAX,[RBX+16];
 			sbb RAX,[RSI+16];
 			mov [RDI+16],RAX;
-			mov RAX,[RDI+24];
+			mov RAX,[RBX+24];
 			sbb RAX,[RSI+24];
 			mov [RDI+24],RAX;
-			mov RAX,[RDI+32];
+			mov RAX,[RBX+32];
 			sbb RAX,[RSI+32];
 			mov [RDI+32],RAX;
-			mov RAX,[RDI+40];
+			mov RAX,[RBX+40];
 			sbb RAX,[RSI+40];
 			mov [RDI+40],RAX;
-			mov RAX,[RDI+48];
+			mov RAX,[RBX+48];
 			sbb RAX,[RSI+48];
 			mov [RDI+48],RAX;
-			mov RAX,[RDI+56];
+			mov RAX,[RBX+56];
 			sbb RAX,[RSI+56];
 			mov [RDI+56],RAX;
 			sbb RAX,RAX;
 			neg RAX;
 			mov carry, RAX;
 		}
+		x[0 .. 8] = ret[0 .. 8];
 		return carry;
 
 	}
@@ -443,38 +449,40 @@ word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 {
 	version(D_InlineAsm_X86_64) {
 		word* _z = z.ptr;
+		clearMem(_z, z.length);
+		
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
-		asm {
-			mov RDI,_x;
+		asm pure nothrow @nogc {
+			mov RBX,_x;
 			mov RSI,_y;
 			xor RAX,RAX;
 			sub RAX,carry; //force CF=1 iff *carry==1
-			mov RBX,_z;
-			mov RAX,[RDI];
+			mov RDI,_z;
+			mov RAX,[RBX];
 			sbb RAX,[RSI];
-			mov [RBX],RAX;
-			mov RAX,[RDI+8];
+			mov [RDI],RAX;
+			mov RAX,[RBX+8];
 			sbb RAX,[RSI+8];
-			mov [RBX+8],RAX;
-			mov RAX,[RDI+16];
+			mov [RDI+8],RAX;
+			mov RAX,[RBX+16];
 			sbb RAX,[RSI+16];
-			mov [RBX+16],RAX;
-			mov RAX,[RDI+24];
+			mov [RDI+16],RAX;
+			mov RAX,[RBX+24];
 			sbb RAX,[RSI+24];
-			mov [RBX+24],RAX;
-			mov RAX,[RDI+32];
+			mov [RDI+24],RAX;
+			mov RAX,[RBX+32];
 			sbb RAX,[RSI+32];
-			mov [RBX+32],RAX;
-			mov RAX,[RDI+40];
+			mov [RDI+32],RAX;
+			mov RAX,[RBX+40];
 			sbb RAX,[RSI+40];
-			mov [RBX+40],RAX;
-			mov RAX,[RDI+48];
+			mov [RDI+40],RAX;
+			mov RAX,[RBX+48];
 			sbb RAX,[RSI+48];
-			mov [RBX+48],RAX;
-			mov RAX,[RDI+56];
+			mov [RDI+48],RAX;
+			mov RAX,[RBX+56];
 			sbb RAX,[RSI+56];
-			mov [RBX+56],RAX;
+			mov [RDI+56],RAX;
 			sbb RAX,RAX;
 			neg RAX;
 			mov carry, RAX;
@@ -541,82 +549,78 @@ word word8_linmul2(ref word[8] x, word y, word carry)
 {
 	version(D_InlineAsm_X86_64) {
 		word* _x = x.ptr;
-		size_t word_size = word.sizeof;
+		word[8] ret;
+		word* _z = ret.ptr;
 		asm pure nothrow @nogc {
-			mov R8, _x;
+			mov RSI, _x;
+			mov RDI, _z;
 			mov RCX, carry;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+8];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+8], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+16];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+16], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+24];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+24], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+32];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+32], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+40];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+40], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+48];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R8], RAX;
-			add R8, word_size;
+			mov [RDI+48], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+56];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov carry, RDX;
-			mov [R8], RAX;
+			mov [RDI+56], RAX;
 		}
+		x[0 .. 8] = ret[0 .. 8];
 		return carry;
 	}
 	else {
@@ -641,89 +645,75 @@ word word8_linmul3(ref word[8] z, const ref word[8] x, word y, word carry)
 	version(D_InlineAsm_X86_64) {
 		word* _x = cast(word*)x.ptr;
 		word* _z = z.ptr;
-		size_t word_size = word.sizeof;
+		clearMem(_z, z.length);
 		asm pure nothrow @nogc {
-			mov R8, _x;
-			mov R9, _z;
+			mov RSI, _x;
+			mov RDI, _z;
 			mov RCX, carry;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+8];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+8], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+16];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
-			
-			mov RAX, [R8];
+			mov [RDI+16], RAX;
+		
+			mov RAX, [RSI+24];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+24], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+32];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+32], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+40];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+40], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+48];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+48], RAX;
 			
-			mov RAX, [R8];
+			mov RAX, [RSI+56];
 			mov RBX, y;
 			mul RBX;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov carry, RDX;
-			mov [R9], RAX;
+			mov [RDI+56], RAX;
 		}
 		return carry;
 	}
@@ -746,108 +736,105 @@ word word8_linmul3(ref word[8] z, const ref word[8] x, word y, word carry)
 word word8_madd3(ref word[8] z, const ref word[8] x, word y, word carry)
 {
 	version(D_InlineAsm_X86_64) {
-		auto _x = x.ptr;
+		word* _x = cast(word*)x.ptr;
 		word* _z = z.ptr;
+		word[8] ret; word* _z1 = ret.ptr;
 		size_t word_size = word.sizeof;
 		asm pure nothrow @nogc {
 			mov R8, _x;
-			mov R9, _z;
+			mov RSI, _z;
+			mov R10, y;
+			mov RDI, _z1;
 			mov RCX, carry;
 			
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI], RAX;
+			add R8, 8;
 			
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+8];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+8], RAX;
+			add R8, 8;
 			
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+16];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
-			
+			mov [RDI+16], RAX;
+			add R8, 8;
+
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+24];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
-			
+			mov [RDI+24], RAX;
+			add R8, 8;
+		
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+32];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
+			mov [RDI+32], RAX;
+			add R8, 8;
 			
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+40];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
-			
+			mov [RDI+40], RAX;
+			add R8, 8;
+
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+48];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [R9], RAX;
-			add R8, word_size;
-			add R9, word_size;
-			
+			mov [EDI+48], RAX;
+			add R8, 8;
+
 			mov RAX, [R8];
-			mov RBX, y;
+			mov RBX, R10;
 			mul RBX;
-			add RAX, [R9];
+			add RAX, [RSI+56];
 			adc RDX, 0;
 			add RAX, RCX;
 			adc RDX, 0;
 			mov carry, RDX;
-			mov [R9], RAX;
+			mov [RDI+56], RAX;
 		}
+		z[0 .. 8] = ret[0..8];
 		return carry;
 	} else {
 		z[0] = word_madd3(x[0], y, z[0], &carry);
@@ -901,6 +888,7 @@ void word3_muladd_2(word* w2, word* w1, word* w0, word a, word b)
 			mov R13, w0;
 			mov R14, w1;
 			mov R15, w2;
+			
 			mov RAX, a;
 			mov RBX, b;
 			mul RBX;
