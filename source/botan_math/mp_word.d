@@ -24,17 +24,19 @@ word word_madd2(word a, word b, word* c)
 	} else {
 		version(D_InlineAsm_X86_64) {
 			word* _a = &a;
+			word* _b = &b;
 			asm pure nothrow @nogc {
-				
-				mov RAX, a;
-				mov RBX, b;
-				mul RBX;
+				mov R8, _a;
+				mov R9, _b;
 				mov RCX, c;
+
+				mov RAX, [R8];
+				mov RBX, [R9];
+				mul RBX;
 				add RAX, [RCX];
 				adc RDX, 0;
 				mov [RCX], RDX;
-				mov RBX, _a;
-				mov [RBX], RAX;
+				mov [R8], RAX;
 			}
 			return a;
 		}
@@ -66,18 +68,23 @@ word word_madd3(word a, word b, word c, word* d)
 	} else {
 		version(D_InlineAsm_X86_64) {
 			word* _a = &a;
+			word* _b = &b;
+			word* _c = &c;
 			asm pure nothrow @nogc {
-				mov RAX, a;
-				mov RBX, b;
+				mov R8, _a;
+				mov R9, _b;
+				mov R10, _c;
+
+				mov RAX, [R8];
+				mov RBX, [R9];
 				mul RBX;
 				mov RBX, d;
-				add RAX, c;
+				add RAX, [R10];
 				adc RDX, 0;
 				add RAX, [RBX];
 				adc RDX, 0;
 				mov [RBX], RDX;
-				mov RBX, _a;
-				mov [RBX], RAX;
+				mov [R8], RAX;
 			}
 			return a;
 		}
@@ -121,12 +128,14 @@ word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 	version (D_InlineAsm_X86_64) {
 		word* _x = x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 
 		asm pure nothrow @nogc {
 			mov RDI,_x;
 			mov RSI,_y;
+			mov RCX,_carry;
 			xor RAX,RAX;
-			sub RAX,carry; //force CF=1 iff *carry==1
+			sub RAX,[RCX]; //force CF=1 iff *carry==1
 			mov RAX,[RSI];
 			adc [RDI],RAX;
 			
@@ -153,11 +162,13 @@ word word8_add2(ref word[8] x, const ref word[8] y, word carry)
 			
 		word* _x = x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			mov EDI,_x;
 			mov ESI,_y;
+			mov ECX,_carry;
 			xor EAX,EAX;
-			sub EAX,carry; //force CF=1 iff *carry==1
+			sub EAX,[ECX]; //force CF=1 iff *carry==1
 			mov EAX,[ESI];
 			adc [EDI],EAX;
 			mov EAX,[ESI+4];
@@ -207,15 +218,18 @@ word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 	version(D_InlineAsm_X86_64) {
 
 		word* _z = z.ptr;
+		clearMem(_z, z.length);
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 
 			mov RBX,_x;
 			mov RSI,_y;
 			mov RDI,_z;
+			mov RCX,_carry;
 			xor RAX,RAX;
-			sub RAX,carry; //force CF=1 iff *carry==1
+			sub RAX,[RCX]; //force CF=1 iff *carry==1
 			mov RAX,[RBX];
 			adc RAX,[RSI];
 			mov [RDI],RAX;
@@ -255,15 +269,18 @@ word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		return carry;
 	} else version (D_InlineAsm_X86) {
 		word* _z = z.ptr;
+		clearMem(_z, z.length);
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			
 			mov EBX,_x;
 			mov ESI,_y;
 			mov EDI,_z;
+			mov ECX,_carry;
 			xor EAX,EAX;
-			sub EAX,carry; //force CF=1 iff *carry==1
+			sub EAX,[ECX]; //force CF=1 iff *carry==1
 			mov EAX,[EBX];
 			adc EAX,[ESI];
 			mov [EDI],EAX;
@@ -337,12 +354,14 @@ word word8_sub2(ref word[8] x, const ref word[8] y, word carry)
 		word[8] ret;
 		word* _z = ret.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			mov RBX,_x;
 			mov RSI,_y;
 			mov RDI, _z;
+			mov RCX,_carry;
 			xor RAX,RAX;
-			sub RAX,carry; //force CF=1 iff *carry==1
+			sub RAX,[RCX]; //force CF=1 iff *carry==1
 			mov RAX,[RBX];
 			sbb RAX,[RSI];
 			mov [RDI],RAX;
@@ -380,12 +399,14 @@ word word8_sub2(ref word[8] x, const ref word[8] y, word carry)
 		word* _y = cast(word*)y.ptr;
 		word[8] ret;
 		word* _z = ret.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			mov EBX,_x;
 			mov EDI,_z;
 			mov ESI,_y;
+			mov ECX,_carry;
 			xor EAX,EAX;
-			sub EAX,carry; //force CF=1 iff *carry==1
+			sub EAX,[ECX]; //force CF=1 iff *carry==1
 			mov EAX,[EBX];
 			sbb EAX,[ESI];
 			mov [EDI],EAX;
@@ -457,11 +478,13 @@ word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			mov RBX,_x;
 			mov RSI,_y;
+			mov RCX,_carry;
 			xor RAX,RAX;
-			sub RAX,carry; //force CF=1 iff *carry==1
+			sub RAX,[RCX]; //force CF=1 iff *carry==1
 			mov RDI,_z;
 			mov RAX,[RBX];
 			sbb RAX,[RSI];
@@ -497,11 +520,13 @@ word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		word* _z = z.ptr;
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word* _carry = &carry;
 		asm {
 			mov EBX,_x;
 			mov ESI,_y;
+			mov ECX,_carry;
 			xor EAX,EAX;
-			sub EAX,carry; //force CF=1 iff *carry==1
+			sub EAX,[ECX]; //force CF=1 iff *carry==1
 			mov EDI,_z;
 			mov EAX,[EBX];
 			sbb EAX,[ESI];
@@ -555,10 +580,12 @@ word word8_linmul2(ref word[8] x, word y, word carry)
 		word* _x = x.ptr;
 		word[8] ret;
 		word* _z = ret.ptr;
+		word* _carry = &carry;
 		asm pure nothrow @nogc {
 			mov RSI, _x;
 			mov RDI, _z;
-			mov RCX, carry;
+			mov RDX, _carry;
+			mov RCX, [RDX];
 			
 			mov RAX, [RSI];
 			mov RBX, y;
@@ -649,12 +676,14 @@ word word8_linmul3(ref word[8] z, const ref word[8] x, word y, word carry)
 	version(D_InlineAsm_X86_64) {
 		word* _x = cast(word*)x.ptr;
 		word* _z = z.ptr;
+		word* _carry = &carry;
 		clearMem(_z, z.length);
 		asm pure nothrow @nogc {
 			mov RSI, _x;
 			mov RDI, _z;
-			mov RCX, carry;
-			
+			mov RDX, _carry;
+			mov RCX, [RDX];
+
 			mov RAX, [RSI];
 			mov RBX, y;
 			mul RBX;
@@ -742,14 +771,15 @@ word word8_madd3(ref word[8] z, const ref word[8] x, word y, word carry)
 	version(D_InlineAsm_X86_64) {
 		word* _x = cast(word*)x.ptr;
 		word* _z = z.ptr;
+		word* _carry = &carry;
 		word[8] ret; word* _z1 = ret.ptr;
-		size_t word_size = word.sizeof;
 		asm pure nothrow @nogc {
 			mov R8, _x;
 			mov RSI, _z;
 			mov R10, y;
 			mov RDI, _z1;
-			mov RCX, carry;
+			mov RDX, _carry;
+			mov RCX, [RDX];
 			
 			mov RAX, [R8];
 			mov RBX, R10;
@@ -860,12 +890,16 @@ void word3_muladd(word* w2, word* w1, word* w0, word a, word b)
 {
 	version (D_InlineAsm_X86_64) {
 
+		word* _b = &b;
+		word* _a = &a;
 		asm pure nothrow @nogc {
 			mov R13, w0;
 			mov R14, w1;
 			mov R15, w2;
-			mov RAX, a;
-			mov RBX, b;
+			mov R8, _a;
+			mov R9, _b;
+			mov RAX, [R8];
+			mov RBX, [R9];
 			mul RBX;
 			
 			add [R13], RAX;
@@ -887,14 +921,18 @@ void word3_muladd(word* w2, word* w1, word* w0, word a, word b)
 void word3_muladd_2(word* w2, word* w1, word* w0, word a, word b)
 {
 	version(D_InlineAsm_X86_64) {
+		word* _a = &a;
+		word* _b = &b;
 
 		asm pure nothrow @nogc {
 			mov R13, w0;
 			mov R14, w1;
 			mov R15, w2;
-			
-			mov RAX, a;
-			mov RBX, b;
+			mov R8, _a;
+			mov R9, _b;
+
+			mov RAX, [R8];
+			mov RBX, [R9];
 			mul RBX;
 
 			add [R13], RAX;
