@@ -8,8 +8,7 @@
     "targetPath": "build",
     "sourcePaths": ["source/botan_math/"],
 	"configurations": [{ 
-			"name": "regular",	
-			"buildOptions": ["releaseMode"]
+			"name": "regular"
 		}, 
 		{
             "name": "32mscoff",

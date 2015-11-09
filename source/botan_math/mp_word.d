@@ -259,42 +259,42 @@ word word8_add3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		word* _y = cast(word*)y.ptr;
 		asm pure nothrow @nogc {
 			
-			mov EDI,_x;
+			mov EBX,_x;
 			mov ESI,_y;
-			mov EBX,_z;
+			mov EDI,_z;
 			xor EAX,EAX;
 			sub EAX,carry; //force CF=1 iff *carry==1
-			mov EAX,[EDI];
+			mov EAX,[EBX];
 			adc EAX,[ESI];
-			mov [EBX],EAX;
+			mov [EDI],EAX;
 			
-			mov EAX,[EDI+4];
+			mov EAX,[EBX+4];
 			adc EAX,[ESI+4];
-			mov [EBX+4],EAX;
+			mov [EDI+4],EAX;
 			
-			mov EAX,[EDI+8];
+			mov EAX,[EBX+8];
 			adc EAX,[ESI+8];
-			mov [EBX+8],EAX;
+			mov [EDI+8],EAX;
 			
-			mov EAX,[EDI+12];
+			mov EAX,[EBX+12];
 			adc EAX,[ESI+12];
-			mov [EBX+12],EAX;
+			mov [EDI+12],EAX;
 			
-			mov EAX,[EDI+16];
+			mov EAX,[EBX+16];
 			adc EAX,[ESI+16];
-			mov [EBX+16],EAX;
+			mov [EDI+16],EAX;
 			
-			mov EAX,[EDI+20];
+			mov EAX,[EBX+20];
 			adc EAX,[ESI+20];
-			mov [EBX+20],EAX;
+			mov [EDI+20],EAX;
 			
-			mov EAX,[EDI+24];
+			mov EAX,[EBX+24];
 			adc EAX,[ESI+24];
-			mov [EBX+24],EAX;
+			mov [EDI+24],EAX;
 			
-			mov EAX,[EDI+28];
+			mov EAX,[EBX+28];
 			adc EAX,[ESI+28];
-			mov [EBX+28],EAX;
+			mov [EDI+28],EAX;
 			
 			sbb EAX,EAX;
 			neg EAX;
@@ -378,39 +378,43 @@ word word8_sub2(ref word[8] x, const ref word[8] y, word carry)
 	else version (D_InlineAsm_X86) {
 		word* _x = x.ptr;
 		word* _y = cast(word*)y.ptr;
+		word[8] ret;
+		word* _z = ret.ptr;
 		asm pure nothrow @nogc {
-			mov EDI,_x;
+			mov EBX,_x;
+			mov EDI,_z;
 			mov ESI,_y;
 			xor EAX,EAX;
 			sub EAX,carry; //force CF=1 iff *carry==1
-			mov EAX,[EDI];
+			mov EAX,[EBX];
 			sbb EAX,[ESI];
 			mov [EDI],EAX;
-			mov EAX,[EDI+4];
+			mov EAX,[EBX+4];
 			sbb EAX,[ESI+4];
 			mov [EDI+4],EAX;
-			mov EAX,[EDI+8];
+			mov EAX,[EBX+8];
 			sbb EAX,[ESI+8];
 			mov [EDI+8],EAX;
-			mov EAX,[EDI+12];
+			mov EAX,[EBX+12];
 			sbb EAX,[ESI+12];
 			mov [EDI+12],EAX;
-			mov EAX,[EDI+16];
+			mov EAX,[EBX+16];
 			sbb EAX,[ESI+16];
 			mov [EDI+16],EAX;
-			mov EAX,[EDI+20];
+			mov EAX,[EBX+20];
 			sbb EAX,[ESI+20];
 			mov [EDI+20],EAX;
-			mov EAX,[EDI+24];
+			mov EAX,[EBX+24];
 			sbb EAX,[ESI+24];
 			mov [EDI+24],EAX;
-			mov EAX,[EDI+28];
+			mov EAX,[EBX+28];
 			sbb EAX,[ESI+28];
 			mov [EDI+28],EAX;
 			sbb EAX,EAX;
 			neg EAX;
 			mov carry, EAX;
 		}
+		x[0 .. 8] = ret[0 .. 8];
 		return carry;
 
 	} else {
@@ -494,35 +498,35 @@ word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
 		asm {
-			mov EDI,_x;
+			mov EBX,_x;
 			mov ESI,_y;
 			xor EAX,EAX;
 			sub EAX,carry; //force CF=1 iff *carry==1
-			mov EBX,_z;
-			mov EAX,[EDI];
+			mov EDI,_z;
+			mov EAX,[EBX];
 			sbb EAX,[ESI];
-			mov [EBX],EAX;
-			mov EAX,[EDI+4];
+			mov [EDI],EAX;
+			mov EAX,[EBX+4];
 			sbb EAX,[ESI+4];
-			mov [EBX+4],EAX;
-			mov EAX,[EDI+8];
+			mov [EDI+4],EAX;
+			mov EAX,[EBX+8];
 			sbb EAX,[ESI+8];
-			mov [EBX+8],EAX;
-			mov EAX,[EDI+12];
+			mov [EDI+8],EAX;
+			mov EAX,[EBX+12];
 			sbb EAX,[ESI+12];
-			mov [EBX+12],EAX;
-			mov EAX,[EDI+16];
+			mov [EDI+12],EAX;
+			mov EAX,[EBX+16];
 			sbb EAX,[ESI+16];
-			mov [EBX+16],EAX;
-			mov EAX,[EDI+20];
+			mov [EDI+16],EAX;
+			mov EAX,[EBX+20];
 			sbb EAX,[ESI+20];
-			mov [EBX+20],EAX;
-			mov EAX,[EDI+24];
+			mov [EDI+20],EAX;
+			mov EAX,[EBX+24];
 			sbb EAX,[ESI+24];
-			mov [EBX+24],EAX;
-			mov EAX,[EDI+28];
+			mov [EDI+24],EAX;
+			mov EAX,[EBX+28];
 			sbb EAX,[ESI+28];
-			mov [EBX+28],EAX;
+			mov [EDI+28],EAX;
 			sbb EAX,EAX;
 			neg EAX;
 			mov carry, EAX;
