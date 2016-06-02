@@ -8,7 +8,8 @@
     "targetPath": "build",
     "sourcePaths": ["source/botan_math/"],
 	"configurations": [{ 
-			"name": "regular"
+			"name": "regular",
+            "dflags-windows-x86": ["-m32mscoff"]
 		}, 
 		{
             "name": "32mscoff",

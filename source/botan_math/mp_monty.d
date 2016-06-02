@@ -163,7 +163,6 @@ void bigint_monty_sqr(word* z, size_t z_size,
 void bigint_monty_redc(word* z, in word* p, size_t p_size, word p_dash, word* ws)
 {
 	const size_t z_size = 2*(p_size+1);
-	
 	const size_t blocks_of_8 = p_size - (p_size % 8);
 	
 	foreach (size_t i; 0 .. p_size)
@@ -181,7 +180,7 @@ void bigint_monty_redc(word* z, in word* p, size_t p_size, word p_dash, word* ws
 		
 		for (size_t j = 0; j < blocks_of_8; j += 8)
 			carry = word8_madd3(*cast(word[8]*) (z_i + j), *cast(word[8]*) (p + j), y, carry);
-		
+
 		for (size_t j = blocks_of_8; j < p_size; j++) {
 			version(D_InlineAsm_X86_64) {
 				word* _x = (cast(word*)p) + j;

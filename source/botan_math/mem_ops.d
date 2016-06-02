@@ -1,6 +1,6 @@
 ﻿module botan_math.mem_ops;
 
-import std.c.string : memset, memmove;
+import core.stdc.string : memset, memmove;
 
 /**
 * Zeroise memory
