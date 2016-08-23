@@ -6,7 +6,6 @@ d:
   - dmd-2.069.0
   - dmd-2.068.2
   - dmd-2.067.1
-  - ldc-1.0.0
 
 script:
   - dub test
