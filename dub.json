@@ -6,14 +6,6 @@
     "targetName": "botan_math",
     "targetType": "staticLibrary",
     "targetPath": "build",
-    "sourcePaths": ["source/botan_math/"],
-	"configurations": [{ 
-			"name": "regular",
-            "dflags-windows-x86": ["-m32mscoff"]
-		}, 
-		{
-            "name": "32mscoff",
-            "dflags-windows-x86": ["-m32mscoff"]
-		}]
+    "sourcePaths": ["source/botan_math/"]
 
 }
