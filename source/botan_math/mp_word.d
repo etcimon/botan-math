@@ -855,7 +855,7 @@ word word8_madd3(ref word[8] z, const ref word[8] x, word y, word carry)
 			add RAX, RCX;
 			adc RDX, 0;
 			mov RCX, RDX;
-			mov [EDI+48], RAX;
+			mov [RDI+48], RAX;
 			add R8, 8;
 
 			mov RAX, [R8];

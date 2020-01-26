@@ -4,6 +4,7 @@ import botan_math.mp_types;
 import botan_math.mp_comba;
 import botan_math.mp_monty;
 import std.datetime;
+import std.datetime.stopwatch : StopWatch;
 import std.conv;
 import std.stdio : writeln;
 unittest {
@@ -16,7 +17,7 @@ unittest {
 			bigint_comba_sqr4(z, x);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr4: ", sw.peek().msecs);		
+		writeln("bigint_comba_sqr4: ", sw.peek().total!"msecs");		
 	}
 	void testCombaMul4() {
 		word[4] x = [word.max, word.max, word.max, word.max];
@@ -27,7 +28,7 @@ unittest {
 			bigint_comba_mul4(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_mul4: ", sw.peek().msecs);	
+		writeln("bigint_comba_mul4: ", sw.peek().total!"msecs");	
 		
 	}
 	void testCombaSqr6() {
@@ -38,7 +39,7 @@ unittest {
 			bigint_comba_sqr6(z, x);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr6: ", sw.peek().msecs);		
+		writeln("bigint_comba_sqr6: ", sw.peek().total!"msecs");		
 	}
 
 	void testCombaMul6() {
@@ -50,7 +51,7 @@ unittest {
 			bigint_comba_mul6(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_mul6: ", sw.peek().msecs);		
+		writeln("bigint_comba_mul6: ", sw.peek().total!"msecs");		
 	}
 	void testCombaSqr8() {
 		word[8] x = [word.max, word.max, word.max, word.max, word.max, word.max, word.max, word.max];
@@ -60,7 +61,7 @@ unittest {
 			bigint_comba_sqr8(z, x);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr8: ", sw.peek().msecs);		
+		writeln("bigint_comba_sqr8: ", sw.peek().total!"msecs");		
 	}
 
 	void testCombaMul8() {
@@ -72,7 +73,7 @@ unittest {
 			bigint_comba_mul8(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_mul8: ", sw.peek().msecs);		
+		writeln("bigint_comba_mul8: ", sw.peek().total!"msecs");		
 	}
 
 	void testCombaSqr9() {
@@ -83,7 +84,7 @@ unittest {
 			bigint_comba_sqr9(z, x);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr9: ", sw.peek().msecs);		
+		writeln("bigint_comba_sqr9: ", sw.peek().total!"msecs");		
 	}
 	
 	void testCombaMul9() {
@@ -95,7 +96,7 @@ unittest {
 			bigint_comba_mul9(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_mul9: ", sw.peek().msecs);		
+		writeln("bigint_comba_mul9: ", sw.peek().total!"msecs");		
 	}
 
 	void testCombaSqr16() {
@@ -107,7 +108,7 @@ unittest {
 			bigint_comba_sqr16(z, x);
 		}
 		sw.stop();
-		writeln("bigint_comba_sqr16: ", sw.peek().msecs);		
+		writeln("bigint_comba_sqr16: ", sw.peek().total!"msecs");		
 	}
 
 	void testCombaMul16() {
@@ -121,7 +122,7 @@ unittest {
 			bigint_comba_mul16(z, x, y);
 		}
 		sw.stop();
-		writeln("bigint_comba_mul16: ", sw.peek().msecs);		
+		writeln("bigint_comba_mul16: ", sw.peek().total!"msecs");		
 	}
 
 
