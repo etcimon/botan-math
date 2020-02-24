@@ -12,10 +12,10 @@ module botan_math.mp_types;
 
 public import botan_math.mem_ops;
 
-version(X86) { enum BOTAN_HAS_X86_ARCH = true; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = false; }
-version(X86_64) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = true; enum BOTAN_HAS_ARM_ARCH = false; }
-version(ARM) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = true; }
-
+version(X86) { enum BOTAN_HAS_X86_ARCH = true; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = false; enum BOTAN_HAS_ARM64_ARCH = false; }
+version(X86_64) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = true; enum BOTAN_HAS_ARM_ARCH = false; enum BOTAN_HAS_ARM64_ARCH = false; }
+version(ARM) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = true; enum BOTAN_HAS_ARM64_ARCH = false; }
+version(AArch64) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = false; enum BOTAN_HAS_ARM64_ARCH = true; }
 enum ERR_ARCH = "Cannot compile the selected module on this processor architecture.";
 
 static if (BOTAN_HAS_X86_ARCH)
@@ -24,6 +24,8 @@ else static if (BOTAN_HAS_X86_64_ARCH)
 	enum BOTAN_MP_WORD_BITS = 64;
 else static if (BOTAN_HAS_ARM_ARCH)
 	enum BOTAN_MP_WORD_BITS = 32;
+else static if (BOTAN_HAS_ARM64_ARCH)
+	enum BOTAN_MP_WORD_BITS=64;
 // todo: else static if (BOTAN_HAS_PPC_ARCH)
 
 version(D_SIMD) enum BOTAN_HAS_SIMD = true;
