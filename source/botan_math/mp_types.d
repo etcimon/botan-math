@@ -11,7 +11,7 @@
 module botan_math.mp_types;
 
 public import botan_math.mem_ops;
-
+pure nothrow:
 version(X86) { enum BOTAN_HAS_X86_ARCH = true; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = false; enum BOTAN_HAS_ARM64_ARCH = false; }
 version(X86_64) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = true; enum BOTAN_HAS_ARM_ARCH = false; enum BOTAN_HAS_ARM64_ARCH = false; }
 version(ARM) { enum BOTAN_HAS_X86_ARCH = false; enum BOTAN_HAS_X86_64_ARCH = false; enum BOTAN_HAS_ARM_ARCH = true; enum BOTAN_HAS_ARM64_ARCH = false; }

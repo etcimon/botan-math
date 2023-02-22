@@ -1,7 +1,7 @@
 ﻿module botan_math.mem_ops;
 
 import core.stdc.string : memset, memmove;
-
+pure nothrow:
 /**
 * Zeroise memory
 * Params:

@@ -1,7 +1,7 @@
 ﻿module botan_math.x86_64.mp_comba_mul;
 import std.conv;
 import std.array;
-
+pure nothrow:
 string mp_bigint_comba_mul(alias ROWS)() {
 	// w1 : R14
 	// w2 : R15

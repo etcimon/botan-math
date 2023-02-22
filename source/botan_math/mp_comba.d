@@ -12,6 +12,7 @@
 module botan_math.mp_comba;
 
 import botan_math.mp_word;
+pure nothrow:
 /*
 * Comba 4x4 Squaring
 */

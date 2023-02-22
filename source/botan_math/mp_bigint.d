@@ -12,7 +12,7 @@
 module botan_math.mp_bigint;
 
 import botan_math.mp_word;
-
+pure nothrow:
 /*
 * The size of the word type, in bits
 */

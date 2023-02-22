@@ -15,7 +15,7 @@ import botan_math.mp_word;
 import botan_math.mp_bigint;
 import botan_math.mp_comba;
 import botan_math.mp_karatsuba;
-
+pure nothrow:
 /*
 * Multiplication Algorithm Dispatcher
 */

@@ -12,6 +12,7 @@
 module botan_math.mp_word;
 import botan_math.mul128;
 public import botan_math.mp_types;
+pure nothrow:
 /*
 * Word Multiply/Add
 */

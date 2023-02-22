@@ -14,7 +14,7 @@ module botan_math.mp_karatsuba;
 import botan_math.mp_types;
 import botan_math.mp_bigint;
 import botan_math.mp_comba;
-
+pure nothrow:
 __gshared immutable size_t KARATSUBA_MULTIPLY_THRESHOLD = 32;
 __gshared immutable size_t KARATSUBA_SQUARE_THRESHOLD = 32;
 

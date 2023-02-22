@@ -10,7 +10,7 @@
 * Botan is released under the Simplified BSD License (see LICENSE.md)
 */
 module botan_math.mul128;
-
+pure nothrow:
 void mul64x64_128(ulong a, ulong b, ref ulong[2] res) pure
 {
 	version (D_InlineAsm_X86_64) {
