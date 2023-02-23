@@ -522,7 +522,7 @@ word word8_sub3(ref word[8] z, const ref word[8] x, const ref word[8] y, word ca
 		word* _x = cast(word*)x.ptr;
 		word* _y = cast(word*)y.ptr;
 		word* _carry = &carry;
-		asm {
+		asm pure nothrow @nogc {
 			mov EBX,_x;
 			mov ESI,_y;
 			mov ECX,_carry;
